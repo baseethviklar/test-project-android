@@ -137,7 +137,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             binding.btnConfirm.setOnClickListener {
-                if (binding.edtPass.text.toString() == "123"){
+                if (binding.edtPass.text.toString() == "12345"){
                     customDialog?.dismiss()
                     val intent = Intent(
                         this@MainActivity,SettingsActivity::class.java
