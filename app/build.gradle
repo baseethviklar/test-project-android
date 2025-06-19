@@ -1,0 +1,87 @@
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.serialization)
+}
+
+android {
+    namespace 'com.orbits.testproject'
+
+    lintOptions {
+        abortOnError false
+    }
+    packaging {
+        resources {
+            excludes += ['META-INF/DEPENDENCIES']
+        }
+    }
+
+
+    compileSdkVersion 35
+
+    defaultConfig {
+        applicationId "com.orbits.testproject"
+        minSdkVersion 26
+        targetSdkVersion
+        // buildToolsVersion = "35.0.0"
+        versionCode 3
+        versionName "3.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    sourceSets {
+        main {
+            jni.srcDirs = []    // disable automatic ndk-build call, which ignore our Android.mk
+            jniLibs.srcDir 'src/main/jniLibs'
+        }
+    }
+
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = '11'
+    }
+    buildFeatures {
+        buildConfig = true
+        viewBinding = true
+        dataBinding = true
+    }
+}
+
+dependencies {
+
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    //noinspection GradleCompatible
+    implementation 'org.apache.httpcomponents:httpcore:4.4.4'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    //  implementation 'com.lovedise:permissiongen:0.0.6'
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2" // Replace with the latest version
+
+    implementation files('libs\\ksoap2-android-assembly-3.4.0-jar-with-dependencies.jar')
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    implementation libs.sdp
+    implementation libs.ssp
+    implementation libs.androidx.activity
+    implementation libs.androidx.constraintlayout
+    implementation libs.switch.custom
+    implementation libs.androidx.core.ktx
+    implementation libs.bundles.ktor
+    implementation libs.ktor.client.okhttp
+
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core
+}
