@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ScrollView
+            android:id="@+id/scrollView"
+            android:fillViewport="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                style="@style/AppBackGroundStyleLight"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                
+                <ImageView
+                    android:id="@+id/ivLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/_250sdp"
+                    android:src="@drawable/ic_login"
+                    app:layout_constraintTop_toTopOf="parent"/>
+                
+                <TextView
+                    android:id="@+id/txtLoginHeader"
+                    style="@style/TextStyleCenterBold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/screen_margin"
+                    android:layout_marginTop="@dimen/_30sdp"
+                    android:layout_marginEnd="@dimen/screen_margin"
+                    android:text="Welcome To Login Screen"
+                    android:textSize="@dimen/huge_text_size"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/ivLogin"
+                    app:layout_goneMarginTop="@dimen/screen_margin"
+                    />
+                
+                <EditText
+                    android:id="@+id/edtEmail"
+                    style="@style/CommonInputEditTextStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/edt_height"
+                    android:layout_marginTop="@dimen/_30sdp"
+                    android:hint="Username"
+
+                    android:inputType="textEmailAddress"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/txtLoginHeader"/>
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        </ScrollView>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

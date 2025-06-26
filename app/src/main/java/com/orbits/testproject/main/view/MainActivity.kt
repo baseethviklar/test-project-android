@@ -9,6 +9,7 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.method.PasswordTransformationMethod
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.Window
@@ -37,20 +38,72 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
+        try {
+            binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+            viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
+            // Check startup reason with error handling
+            checkStartupReason()
 
-        setButtonListener()
-        initObserver()
+            setButtonListener()
+            initObserver()
 
+            Log.d("MainActivity", "MainActivity created successfully")
 
-
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error in onCreate", e)
+            // Don't crash on boot startup
+            finish()
+        }
     }
 
 
-    
+    /**
+     * Check how the app was started and show appropriate message
+     */
+    private fun checkStartupReason() {
+        try {
+            val autoStarted = intent.getBooleanExtra("AUTO_STARTED", false)
+            val crashRestart = intent.getBooleanExtra("CRASH_RESTART", false)
+
+            Log.d("MainActivity", "Checking startup reason - autoStarted: $autoStarted, crashRestart: $crashRestart")
+
+            when {
+                autoStarted -> {
+                    Log.d("MainActivity", "App auto-started after device boot")
+                    Toast.makeText(this, "App started automatically after boot", Toast.LENGTH_LONG).show()
+                    binding.txtValue.text = "Auto-started after boot"
+                }
+                crashRestart -> {
+                    Log.d("MainActivity", "App restarted after crash recovery")
+                    Toast.makeText(this, "App recovered from crash", Toast.LENGTH_LONG).show()
+                    binding.txtValue.text = "Recovered from crash"
+                }
+                else -> {
+                    Log.d("MainActivity", "App started normally by user")
+                    binding.txtValue.text = "Ready to generate barcode"
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error in checkStartupReason", e)
+        }
+    }
+
+
+    /**
+     * Test method to simulate app crash for testing crash handler
+     */
+    private fun testCrashHandler() {
+        Log.d("MainActivity", "Testing crash handler...")
+        Toast.makeText(this, "Testing crash handler in 2 seconds...", Toast.LENGTH_SHORT).show()
+
+        // Delay crash to show toast message first
+        binding.txtValue.postDelayed({
+            throw RuntimeException("Test crash for crash handler verification")
+        }, 2000)
+    }
+
     private fun setButtonListener(){
         binding.btnGenerate.setOnClickListener {
             viewModel.getBarcodeApi(
@@ -63,16 +116,18 @@ class MainActivity : AppCompatActivity() {
                     Printer_Status_Str_Ar = ""
                 )
             )
-            
         }
+
         binding.btnNavigate.setOnClickListener {
             showPasswordDialog()
-
         }
 
+        // Long press on generate button to test crash handler
+        binding.btnGenerate.setOnLongClickListener {
+            testCrashHandler()
+            true
+        }
     }
-
-
 
     private fun initObserver(){
         viewModel.mutGetBarcodeResponse.observe(this){
@@ -80,6 +135,7 @@ class MainActivity : AppCompatActivity() {
                 if (it!=null){
                     if (it.jsonReturnStatus?.success==true){
                         println("here is success ${it.barcode}")
+                        Log.d("MainActivity", "Barcode generated successfully: ${it.barcode}")
                         binding.txtValue.text = it.barcode
                         viewModel.getPaymentDetailsApi(
                             uid = it.barcode ?: "",
@@ -88,6 +144,7 @@ class MainActivity : AppCompatActivity() {
                         )
                     } else {
                         println("here is failure")
+                        Log.e("MainActivity", "Barcode generation failed: ${it.jsonReturnStatus?.errMessage}")
                         binding.txtValue.text = it.jsonReturnStatus?.errMessage
                     }
                 }
@@ -98,15 +155,16 @@ class MainActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 if (it!=null){
                     if (it.jsonReturnStatus?.success==true){
+                        Log.d("MainActivity", "Payment details retrieved: ${it.amountCharged}")
                         binding.txtValue2.text = it.amountCharged
                     } else {
+                        Log.e("MainActivity", "Payment details failed: ${it.jsonReturnStatus?.errMessage}")
                         binding.txtValue2.text = it.jsonReturnStatus?.errMessage
                     }
                 }
             }
         }
     }
-
 
     var customDialog: Dialog? = null
 
@@ -131,7 +189,6 @@ class MainActivity : AppCompatActivity() {
             customDialog?.setCanceledOnTouchOutside(isCancellable ?: true)
             customDialog?.setCancelable(isCancellable ?: true)
 
-
             binding.cancel.setOnClickListener {
                 customDialog?.dismiss()
             }
@@ -139,17 +196,19 @@ class MainActivity : AppCompatActivity() {
             binding.btnConfirm.setOnClickListener {
                 if (binding.edtPass.text.toString() == "12345"){
                     customDialog?.dismiss()
+                    Log.d("MainActivity", "Password correct - navigating to settings")
                     val intent = Intent(
-                        this@MainActivity,SettingsActivity::class.java
-
+                        this@MainActivity, SettingsActivity::class.java
                     )
                     startActivity(intent)
                 } else {
+                    Log.w("MainActivity", "Invalid password entered")
                     Toast.makeText(this,"Invalid password", Toast.LENGTH_SHORT).show()
                 }
             }
             customDialog?.show()
         } catch (e: Exception) {
+            Log.e("MainActivity", "Error showing password dialog", e)
             e.printStackTrace()
         }
     }
@@ -159,14 +218,27 @@ class MainActivity : AppCompatActivity() {
             (Constants.DEVICE_DENSITY * size).toInt()
         } else {
             ((getDeviceWidthInDouble(activity) / 320) * size).toInt()
-
         }
     }
-
 
     fun getDeviceWidthInDouble(activity: Activity): Double {
         val displayMetrics = DisplayMetrics()
         activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
         return displayMetrics.widthPixels.toDouble()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("MainActivity", "MainActivity destroyed")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("MainActivity", "MainActivity paused")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("MainActivity", "MainActivity resumed")
     }
 }
